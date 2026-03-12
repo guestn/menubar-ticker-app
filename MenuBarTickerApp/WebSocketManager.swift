@@ -99,7 +99,7 @@ class WebSocketManager {
                 self?.receiveMessage() // Loop for next message
                 
             case .failure(let error):
-                print("❌ WebSocket Disconnected: \(error)")
+                print("WebSocket Disconnected: \(error)")
                 self?.handleDisconnection()
             }
         }
@@ -135,7 +135,7 @@ class WebSocketManager {
             }
             
             let symbol = instrument.replacingOccurrences(of: "_USD", with: "")
-            return "\(symbol): $\(price)"
+            return "\(symbol) \(price)"
             
         } catch {
             return nil

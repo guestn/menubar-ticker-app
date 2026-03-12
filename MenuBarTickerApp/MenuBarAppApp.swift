@@ -23,6 +23,8 @@ import SwiftUI
                 }
             } label: {
                 Text(wsManager.statusTitle)
+                    .font(.custom("Courier-Bold", size: 14))
+                    .allowsTightening(false)
             }
         }
 }
