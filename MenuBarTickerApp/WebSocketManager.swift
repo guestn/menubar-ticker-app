@@ -33,8 +33,11 @@ struct TickerData: Decodable {
 
 @Observable
 class WebSocketManager {
-    var statusTitle: String = "Connecting..."
+    var statusTitle: String = "..."
     private var webSocketTask: URLSessionWebSocketTask?
+    private var reconnectTimer: Timer?
+    private var isConnecting: Bool = false
+    
     let symbol: String = "XRP_USD"
     
     init() {
@@ -42,17 +45,24 @@ class WebSocketManager {
     }
     
     func connect() {
+        // Prevent multiple simultaneous connection attempts
+        guard !isConnecting else { return }
+        isConnecting = true
+        
         let url = URL(string: "wss://stream.crypto.com/v2/market")!
-        var request = URLRequest(url: url)
-        
-        request.setValue("Mozilla/5.0", forHTTPHeaderField: "User-Agent")
-        
-        // Explicitly create the task with the request
-        webSocketTask = URLSession.shared.webSocketTask(with: request)
+        webSocketTask = URLSession.shared.webSocketTask(with: url)
         webSocketTask?.resume()
+        
+        // Clear existing timers
+        reconnectTimer?.invalidate()
         
         sendSubscription()
         receiveMessage()
+        
+        // Reset flag after delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.isConnecting = false
+        }
     }
     
     private func sendSubscription() {
@@ -80,18 +90,36 @@ class WebSocketManager {
             switch result {
             case .success(let message):
                 if case .string(let text) = message {
-                    // update statusTitle with the price
-                    DispatchQueue.main.async {
-                        self?.statusTitle = self?.parsePrice(from: text) ?? text
+                    if let formattedPrice = self?.parsePrice(from: text) {
+                        DispatchQueue.main.async {
+                            self?.statusTitle = formattedPrice
+                        }
                     }
                 }
-                self?.receiveMessage()
-            case .failure:
-                DispatchQueue.main.async { self?.statusTitle = "Offline" }
+                self?.receiveMessage() // Loop for next message
+                
+            case .failure(let error):
+                print("❌ WebSocket Disconnected: \(error)")
+                self?.handleDisconnection()
             }
         }
     }
-    
+
+    private func handleDisconnection() {
+        DispatchQueue.main.async {
+            self.statusTitle = "Recon..."
+            
+            // Invalidate any old timer
+            self.reconnectTimer?.invalidate()
+            
+            // Attempt to reconnect every 5 seconds
+            self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { [weak self] _ in
+                print("Attempting reconnect...")
+                self?.connect()
+            }
+        }
+    }
+
     private func parsePrice(from jsonString: String) -> String? {
         guard let data = jsonString.data(using: .utf8) else { return nil }
         
