@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		988ABAC02F62FDE800724DA1 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 988ABABF2F62FDE800724DA1 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		988ABA902F61BAFD00724DA1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		988ABA822F61BAFD00724DA1 /* MenuBarApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MenuBarApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		988ABA8F2F61BAFD00724DA1 /* MenuBarAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MenuBarAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		988ABA992F61BAFE00724DA1 /* MenuBarAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MenuBarAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		988ABABF2F62FDE800724DA1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +80,7 @@
 		988ABA792F61BAFC00724DA1 = {
 			isa = PBXGroup;
 			children = (
+				988ABABF2F62FDE800724DA1 /* README.md */,
 				988ABA842F61BAFD00724DA1 /* MenuBarTickerApp */,
 				988ABA922F61BAFE00724DA1 /* MenuBarAppTests */,
 				988ABA9C2F61BAFE00724DA1 /* MenuBarAppUITests */,
@@ -212,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				988ABAC02F62FDE800724DA1 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
