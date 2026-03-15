@@ -8,23 +8,28 @@
 import SwiftUI
 
 @main struct MenuBarTickerApp: App {
-    
+
     // Create the manager
     @State private var wsManager = WebSocketManager()
-    
+
     var body: some Scene {
-            MenuBarExtra {
-                Button("Reconnect") {
-                    wsManager.connect()
-                }
-                Divider()
-                Button("Quit") {
-                    NSApplication.shared.terminate(nil)
-                }
+        MenuBarExtra {
+            Button {
+                wsManager.connect()
             } label: {
-                Text(wsManager.statusTitle)
-                    .font(.custom("Courier-Bold", size: 14))
-                    .allowsTightening(false)
+                Label("Reconnect", systemImage: "arrow.clockwise")
             }
+            Divider()
+            Button {
+                NSApplication.shared.terminate(nil)
+            } label: {
+                Label("Quit", systemImage: "xmark.circle.fill")
+            }
+        } label: {
+            Text(wsManager.statusTitle)
+                .font(.custom("Courier-Bold", size: 14))
+                .foregroundColor(.red)
+                .allowsTightening(false)
         }
+    }
 }

@@ -37,54 +37,56 @@ class WebSocketManager {
     private var webSocketTask: URLSessionWebSocketTask?
     private var reconnectTimer: Timer?
     private var isConnecting: Bool = false
-    
+
     let symbol: String = "XRP_USD"
-    
+    let wsURL: String = "wss://stream.crypto.com/v2/market"
+
     init() {
         connect()
     }
-    
+
     func connect() {
         // Prevent multiple simultaneous connection attempts
         guard !isConnecting else { return }
         isConnecting = true
-        
-        let url = URL(string: "wss://stream.crypto.com/v2/market")!
+
+        let url = URL(string: wsURL)!
         webSocketTask = URLSession.shared.webSocketTask(with: url)
         webSocketTask?.resume()
-        
+
         // Clear existing timers
         reconnectTimer?.invalidate()
-        
+
         sendSubscription()
         receiveMessage()
-        
+
         // Reset flag after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.isConnecting = false
         }
     }
-    
+
     private func sendSubscription() {
         let sub = SubscriptionMessage(
             id: 1,
             method: "subscribe",
             params: SubscriptionParams(channels: ["ticker.\(symbol)"])
         )
-        
+
         // Encode to JSON string
         guard let data = try? JSONEncoder().encode(sub),
-              let jsonString = String(data: data, encoding: .utf8) else { return }
-        
+            let jsonString = String(data: data, encoding: .utf8)
+        else { return }
+
         let message = URLSessionWebSocketTask.Message.string(jsonString)
-        
+
         webSocketTask?.send(message) { error in
             if let error = error {
                 print("Subscription failed: \(error)")
             }
         }
     }
-    
+
     private func receiveMessage() {
         webSocketTask?.receive { [weak self] result in
             switch result {
@@ -96,8 +98,8 @@ class WebSocketManager {
                         }
                     }
                 }
-                self?.receiveMessage() // Loop for next message
-                
+                self?.receiveMessage()  // Loop for next message
+
             case .failure(let error):
                 print("WebSocket Disconnected: \(error)")
                 self?.handleDisconnection()
@@ -108,12 +110,13 @@ class WebSocketManager {
     private func handleDisconnection() {
         DispatchQueue.main.async {
             self.statusTitle = "Recon..."
-            
+
             // Invalidate any old timer
             self.reconnectTimer?.invalidate()
-            
-            // Attempt to reconnect every 5 seconds
-            self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { [weak self] _ in
+
+            // Attempt to reconnect every 2 seconds
+            self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) {
+                [weak self] _ in
                 print("Attempting reconnect...")
                 self?.connect()
             }
@@ -122,21 +125,22 @@ class WebSocketManager {
 
     private func parsePrice(from jsonString: String) -> String? {
         guard let data = jsonString.data(using: .utf8) else { return nil }
-        
+
         do {
             let decoded = try JSONDecoder().decode(CryptoResponse.self, from: data)
-            
+
             // Use guard to ensure the data exists and contains the price 'k'
             guard let firstData = decoded.result?.data?.first,
-                  let price = firstData.k,
-                  let instrument = firstData.i,
-                  !price.isEmpty else {
+                let price = firstData.k,
+                let instrument = firstData.i,
+                !price.isEmpty
+            else {
                 return nil
             }
-            
-            let symbol = instrument.replacingOccurrences(of: "_USD", with: "")
-            return "\(symbol) \(price)"
-            
+
+            let firstChar = instrument.first.map(String.init) ?? ""
+            return "\(firstChar): \(price)"
+
         } catch {
             return nil
         }
