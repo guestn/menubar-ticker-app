@@ -38,7 +38,7 @@ class WebSocketManager {
     private var reconnectTimer: Timer?
     private var isConnecting: Bool = false
 
-    let symbol: String = "XRP_USD"
+    var symbol: String = "XRP_USD"
     let wsURL: String = "wss://stream.crypto.com/v2/market"
 
     init() {
@@ -46,6 +46,11 @@ class WebSocketManager {
     }
 
     func connect() {
+        // Show reconnecting status immediately
+        DispatchQueue.main.async {
+            self.statusTitle = "Recon..."
+        }
+
         // Prevent multiple simultaneous connection attempts
         guard !isConnecting else { return }
         isConnecting = true
@@ -64,6 +69,16 @@ class WebSocketManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.isConnecting = false
         }
+    }
+
+    func updateSymbol(to newSymbol: String) {
+        guard newSymbol != symbol else { return }
+        symbol = newSymbol
+
+        webSocketTask?.cancel(with: .goingAway, reason: nil)
+        webSocketTask = nil
+
+        connect()
     }
 
     private func sendSubscription() {
