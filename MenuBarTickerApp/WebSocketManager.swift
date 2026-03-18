@@ -33,7 +33,12 @@ struct TickerData: Decodable {
 
 @Observable
 class WebSocketManager {
-    var statusTitle: String = "..."
+    var statusTitle: String = "..." {
+        didSet {
+            statusTitleDidChange?(statusTitle)
+        }
+    }
+    var statusTitleDidChange: ((String) -> Void)?
     private var webSocketTask: URLSessionWebSocketTask?
     private var reconnectTimer: Timer?
     private var isConnecting: Bool = false
@@ -129,8 +134,8 @@ class WebSocketManager {
             // Invalidate any old timer
             self.reconnectTimer?.invalidate()
 
-            // Attempt to reconnect every 2 seconds
-            self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) {
+            // Attempt to reconnect every 1 second
+            self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) {
                 [weak self] _ in
                 print("Attempting reconnect...")
                 self?.connect()
